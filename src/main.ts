@@ -65,8 +65,8 @@ export default class TemplateNotePlugin extends Plugin {
   private async buildNote(selectedTemplates: TFile[]) {
     const { noteLocation, prefixFormat } = this.settings;
     const prefix = moment().format(prefixFormat);
-    const fileName = `${prefix} Untitled.md`;
-    const filePath = noteLocation ? `${noteLocation}/${fileName}` : fileName;
+    let fileName = `${prefix} Untitled.md`;
+    let filePath = noteLocation ? `${noteLocation}/${fileName}` : fileName;
 
     // Ensure folder exists
     if (noteLocation) {
@@ -76,31 +76,40 @@ export default class TemplateNotePlugin extends Plugin {
       }
     }
 
+    // Handle filename collision by appending a counter
+    let counter = 1;
+    while (this.app.vault.getAbstractFileByPath(filePath)) {
+      fileName = `${prefix} Untitled ${counter}.md`;
+      filePath = noteLocation ? `${noteLocation}/${fileName}` : fileName;
+      counter++;
+    }
+
     // Parse and merge selected templates (single pass)
-    let merged = { frontmatter: {} as Record<string, unknown>, body: '' };
-    if (selectedTemplates.length > 0) {
-      const parsed = [];
-      for (const file of selectedTemplates) {
-        const content = await this.app.vault.read(file);
-        parsed.push(parseTemplate(content));
+    const parsed = [];
+    for (const file of selectedTemplates) {
+      const content = await this.app.vault.read(file);
+      parsed.push(parseTemplate(content));
+    }
+    const merged = mergeTemplates(parsed);
+
+    try {
+      const newFile = await this.app.vault.create(filePath, merged.body);
+
+      // Apply merged frontmatter
+      if (Object.keys(merged.frontmatter).length > 0) {
+        await this.app.fileManager.processFrontMatter(newFile, (fm) => {
+          for (const [key, value] of Object.entries(merged.frontmatter)) {
+            fm[key] = value;
+          }
+        });
       }
-      merged = mergeTemplates(parsed);
+
+      // Open the new note in a new tab
+      const leaf = this.app.workspace.getLeaf('tab');
+      await leaf.openFile(newFile);
+      new Notice(`Created ${fileName}`);
+    } catch (e) {
+      new Notice(`Failed to create note: ${e instanceof Error ? e.message : String(e)}`);
     }
-
-    const newFile = await this.app.vault.create(filePath, merged.body);
-
-    // Apply merged frontmatter
-    if (Object.keys(merged.frontmatter).length > 0) {
-      await this.app.fileManager.processFrontMatter(newFile, (fm) => {
-        for (const [key, value] of Object.entries(merged.frontmatter)) {
-          fm[key] = value;
-        }
-      });
-    }
-
-    // Open the new note
-    const leaf = this.app.workspace.getLeaf();
-    await leaf.openFile(newFile);
-    new Notice(`Created ${fileName}`);
   }
 }
