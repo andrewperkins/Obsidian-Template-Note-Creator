@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "template-note-creator",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "Create uniquely-prefixed notes with merged frontmatter from multiple templates.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
