@@ -34,7 +34,8 @@ export function mergeFrontmatter(
     if (!(key in result)) {
       result[key] = value;
     } else if (Array.isArray(result[key]) && Array.isArray(value)) {
-      result[key] = [...(result[key] as unknown[]), ...value];
+      const merged = [...(result[key] as unknown[]), ...value];
+      result[key] = [...new Set(merged)];
     }
     // scalar conflict: first wins, do nothing
   }
