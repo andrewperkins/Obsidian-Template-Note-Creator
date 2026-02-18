@@ -65,7 +65,7 @@ export default class TemplateNotePlugin extends Plugin {
   private async buildNote(selectedTemplates: TFile[]) {
     const { noteLocation, prefixFormat } = this.settings;
     const prefix = moment().format(prefixFormat);
-    let fileName = `${prefix} Untitled.md`;
+    let fileName = `${prefix}.md`;
     let filePath = noteLocation ? `${noteLocation}/${fileName}` : fileName;
 
     // Ensure folder exists
@@ -79,7 +79,7 @@ export default class TemplateNotePlugin extends Plugin {
     // Handle filename collision by appending a counter
     let counter = 1;
     while (this.app.vault.getAbstractFileByPath(filePath)) {
-      fileName = `${prefix} Untitled ${counter}.md`;
+      fileName = `${prefix} ${counter}.md`;
       filePath = noteLocation ? `${noteLocation}/${fileName}` : fileName;
       counter++;
     }

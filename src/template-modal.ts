@@ -16,6 +16,20 @@ export class TemplateSelectModal extends Modal {
     contentEl.empty();
     contentEl.createEl('h2', { text: 'Select templates' });
 
+    const createButton = (container: HTMLElement) => {
+      new Setting(container)
+        .addButton(btn => btn
+          .setButtonText('Create Note')
+          .setCta()
+          .onClick(() => {
+            const selectedFiles = this.templateFiles.filter(f => this.selected.has(f.path));
+            this.close();
+            this.onSubmit(selectedFiles);
+          }));
+    };
+
+    createButton(contentEl);
+
     for (const file of this.templateFiles) {
       const name = file.basename;
       new Setting(contentEl)
@@ -31,15 +45,7 @@ export class TemplateSelectModal extends Modal {
           }));
     }
 
-    new Setting(contentEl)
-      .addButton(btn => btn
-        .setButtonText('Create Note')
-        .setCta()
-        .onClick(() => {
-          const selectedFiles = this.templateFiles.filter(f => this.selected.has(f.path));
-          this.close();
-          this.onSubmit(selectedFiles);
-        }));
+    createButton(contentEl);
   }
 
   onClose() {
