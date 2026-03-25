@@ -1,7 +1,6 @@
 {
 	"id": "template-note-creator",
 	"name": "Template Note Creator",
-	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "Create uniquely-prefixed notes with merged frontmatter from multiple templates.",
 	"author": "Andrew",
