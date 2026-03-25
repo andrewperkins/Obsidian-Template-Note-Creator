@@ -5,10 +5,13 @@ export class TemplateSelectModal extends Modal {
   private selected: Set<string> = new Set();
   private onSubmit: (selected: TFile[]) => void;
 
-  constructor(app: App, templateFiles: TFile[], onSubmit: (selected: TFile[]) => void) {
+  private prechecked: Set<string>;
+
+  constructor(app: App, templateFiles: TFile[], onSubmit: (selected: TFile[]) => void, prechecked: string[] = []) {
     super(app);
     this.templateFiles = templateFiles;
     this.onSubmit = onSubmit;
+    this.prechecked = new Set(prechecked);
   }
 
   onOpen() {
@@ -32,10 +35,14 @@ export class TemplateSelectModal extends Modal {
 
     for (const file of this.templateFiles) {
       const name = file.basename;
+      const isChecked = this.prechecked.has(name);
+      if (isChecked) {
+        this.selected.add(file.path);
+      }
       new Setting(contentEl)
         .setName(name)
         .addToggle(toggle => toggle
-          .setValue(false)
+          .setValue(isChecked)
           .onChange((value) => {
             if (value) {
               this.selected.add(file.path);

@@ -38,7 +38,7 @@ export default class TemplateNotePlugin extends Plugin {
 
     new TemplateSelectModal(this.app, templateFiles, async (selected) => {
       await this.buildNote(selected);
-    }).open();
+    }, ['Journal Template']).open();
   }
 
   private getTemplateFiles(): TFile[] | null {
@@ -95,14 +95,13 @@ export default class TemplateNotePlugin extends Plugin {
     try {
       const newFile = await this.app.vault.create(filePath, merged.body);
 
-      // Apply merged frontmatter
-      if (Object.keys(merged.frontmatter).length > 0) {
-        await this.app.fileManager.processFrontMatter(newFile, (fm) => {
-          for (const [key, value] of Object.entries(merged.frontmatter)) {
-            fm[key] = value;
-          }
-        });
-      }
+      // Apply merged frontmatter and set created date
+      await this.app.fileManager.processFrontMatter(newFile, (fm) => {
+        for (const [key, value] of Object.entries(merged.frontmatter)) {
+          fm[key] = value;
+        }
+        fm['created'] = window.moment().format('YYYY-MM-DD');
+      });
 
       // Open the new note in a new tab
       const leaf = this.app.workspace.getLeaf('tab');
